@@ -1,0 +1,534 @@
+---
+title: "Introduction to R"
+author: "by Irimia Mihaela"
+date: "2024-01-23"
+output: html_document
+---
+
+```{=html}
+<script type="text/javascript" async
+  src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+</script>
+```
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+### [**Test - Introduction to R **]{style="color:blue"}
+#### [**Analyzed data set:**]{style="color:blue"} [**pirates**]{style="color:red"}
+
+Loading the necessary packages:
+```{r , echo = FALSE, warning=FALSE, error=FALSE, message=FALSE}
+# install.packages('yarrr')
+library(yarrr)
+
+library(tidymodels)
+library(Hmisc)
+library(tidyr)
+library(lubridate)
+library(psych)
+library(readxl)
+library(broom)
+library(lm.beta)
+library(yarrr)
+# install.packages("lm.beta")
+library(lm.beta)
+require(devtools)
+library(tidyverse)
+library(lubridate)
+library(DataEditR)
+library(readxl)
+library(RPostgres)
+# install.packages("foreign")
+library(foreign)
+library(haven)
+# install.packages('writexl')
+library(writexl)
+# install.packages('rio')
+library(rio)
+# install.packages('openxlsx')
+library(openxlsx)
+# install.packages('skimr')
+library(skimr)
+# install.packages('PerformanceAnalytics')
+library(PerformanceAnalytics)
+# install.packages('broom')
+library(broom)
+library(DataEditR)
+library(psych)
+# install.packages("pastecs")
+library(pastecs) 
+library(readr)
+library(tidyverse)
+library(janitor)
+# install.packages('janitor')
+options(scipen=999)
+# install.packages('broom')
+library (broom)
+# install.packages('corrr')
+library(corrr)
+#install.packages("ggrepel")
+# install.packages('ggrepel')
+library(ggrepel)
+# install.packages('corrplot')
+library(corrplot)
+# install.packages('car')
+library(car)
+# install.packages('corrgram')
+library(corrgram)
+# install.packages('DataExplorer')
+library(DataExplorer)
+library(carrier)
+library(CARRoT)
+```
+#### Obiectivul analizei
+
+::: {style="text-align: justify;"}
+# [***Select pirates that have at least 5 tattoos or at least 5 parrots, have ‘Jack Sparrow’ as their favorite pirate, wear a headband, have a beard length of at least 15, and what are their records ordered by ID?***]{style="color:darkred;"}
+:::
+
+```{r, echo = TRUE, warning=FALSE, error=FALSE, message=FALSE}
+selectie_pirates <- pirates %>%
+  filter(tattoos >= 5 | parrots >= 5) %>%
+  filter(favorite.pirate == "Jack Sparrow") %>%
+  filter(headband == "yes") %>%
+  filter(beard.length >= 15) %>%
+  arrange(id)
+selectie_pirates %>%
+  head(10)
+```
+# [***Plot the heights and the weight of the pirates***]{style="color:darkred;"}
+```{r, echo = TRUE, warning=FALSE, error=FALSE, message=FALSE}
+class(pirates)
+str(pirates)
+```
+the variables age and weight are numeric, so we will use a scatter plot for representation
+
+the name of the variables
+```{r, echo = TRUE, warning=FALSE, error=FALSE, message=FALSE}
+names(pirates)
+```
+
+```{r, echo = TRUE, warning=FALSE, error=FALSE, message=FALSE}
+plot(height ~ weight,  pirates) # the scatter plot
+abline(coef(lm(height ~ weight, pirates)), col = 'blue', lwd = 3) # the regression line
+```
+```{r, echo = TRUE, warning=FALSE, error=FALSE, message=FALSE}
+
+```
+
+as we can see the relationship between weight and heights variables is linear  
+```{r, echo = TRUE, warning=FALSE, error=FALSE, message=FALSE}
+
+```
+# [***Test if there is a difference between pirates with eye patch and those without eye patch***]{style="color:darkred;"}
+```{r}
+
+```
+
+first we will test if the variance of the pirates with eye patch and that of the pirates without eye patch is equal or not
+```{r}
+
+```
+
+checking the type of eye patch variable
+```{r, echo = TRUE, warning=FALSE, error=FALSE, message=FALSE}
+levels(pirates$eyepatch)
+pirates$eyepatch <- as.factor(pirates$eyepatch)
+```
+setting the first group: pirates without eye patch
+```{r, echo = TRUE, warning=FALSE, error=FALSE, message=FALSE}
+levels(pirates$eyepatch) <- c('fara_petec', 'cu_petec')
+```
+testing the variance with Bartlett test  
+```{r, echo = TRUE, warning=FALSE, error=FALSE, message=FALSE}
+bartlett.test(beard.length~eyepatch, pirates, eyepatch %in%  c('fara_petec', 'cu_petec'))
+```
+or
+```{r, echo = TRUE, warning=FALSE, error=FALSE, message=FALSE}
+bartlett.test(beard.length~eyepatch, pirates)
+```
+Hypothesis:
+```{r}
+
+```
+
+$$
+H_0: \text{The variances of the groups are equal}
+$$
+```{r}
+
+```
+
+$$
+H_1: \text{The variance of the groups is significantly different}
+$$
+```{r}
+
+```
+
+Decision:
+$$
+p\text{-value} < 0.05 \Rightarrow \text{we reject } H_0 \text{ with a 5\% risk of Type I error}
+$$
+$$
+p\text{-value} \ge 0.05 \Rightarrow \text{fail to reject } H_0 \text{ at the 5\% significance level}
+$$
+Results
+$$
+p\text{-value} = 0.5579 > 0.05 \Rightarrow \text{fail to reject } H_0
+$$
+
+The variance between the groups is not statistically significant.
+```{r}
+
+```
+
+Second 
+we will test if there is a difference between pirates with eye patch and those without eye patch
+we use the t test for independent samples
+```{r, echo = TRUE, warning=FALSE, error=FALSE, message=FALSE}
+t.test(beard.length~eyepatch, data = pirates, alternative = 'greater', var.equal=T)
+```
+
+Hypothesis
+```{r}
+
+```
+$$
+H_0: \text{There is no difference between the mean beard length (≥ 15) of pirates with an eye patch and those without an eye patch}
+$$
+```{r}
+
+```
+$$H_1:\mu_1 < \mu_2 {\text{ the differences are significant }} $$
+
+Used test: t test
+```{r}
+
+```
+Results:
+```{r}
+
+```
+$$ {\text{ p-value = 0.07326 > 0,05 =>  accepting H_0. There is no significant differences between the analyzed groups   }}
+$$
+```{r}
+
+```
+
+# [***Checking the code for errors***]{style="color:darkred;"}
+Can we compare the models?
+```{r, echo = TRUE, warning=FALSE, error=FALSE, message=FALSE}
+ms1<-lm(pirates$beard.length~pirates$height)
+ms2<-lm(pirates$beard.length~pirates$weight+I(pirates$weight^2))
+```
+The models can not be compare, because the independent variables are not the same 
+```{r, echo = TRUE, warning=FALSE, error=FALSE, message=FALSE}
+anova(ms1, ms2)
+```
+```{r}
+
+```
+the value of the p-value is missing
+```{r, echo = TRUE, warning=FALSE, error=FALSE, message=FALSE}
+ms1<-lm(pirates$beard.length~pirates$height)
+ms2<-lm(pirates$beard.length~pirates$height+I(pirates$height^2))
+```
+to be able to compere the two models the weight variable must be replace with height variable
+```{r}
+
+```
+
+```{r, echo = TRUE, warning=FALSE, error=FALSE, message=FALSE}
+anova(ms1, ms2)
+```
+```{r}
+
+```
+$$
+H_0: \text{There is no difference between the models}
+$$
+```{r}
+
+```
+$$
+H_1: \text{The complex model is better than the simple regression model }
+$$
+$$
+p\text{-value} = 0.1438 > 0.05 \Rightarrow \text{fail to reject } H_0.
+$$
+
+There is no statistically significant difference between the models.
+
+
+```{r}
+
+```
+# [***Transform a numerical variable into a variable with 3 classes***]{style="color:darkred;"} 
+
+```{r}
+str(pirates)
+pirates$inaltime_cat<-cut(pirates$height, 3, c("Short", "Medium",  "Tall"))
+```
+
+
+# [***Estimate the regression model between tchests, age and pirates variables***]{style="color:darkred;"}
+```{r}
+
+```
+To see if the tchests is correlated with age we will do a scatter plot
+```{r}
+plot(tchests ~ age,  pirates) 
+abline(coef(lm(tchests ~ age, pirates)), col = 'blue', lwd = 3)
+```
+estimate the regression model
+```{r}
+reg_m <- lm(tchests ~ age, pirates)
+```
+the statistics of the estimated model
+
+```{r}
+summary(reg_m)
+```
+```{r}
+formula(reg_m)
+```
+
+# Estimated equation
+tchests = 0.2083 + 0.8217 * age
+
+# Interpretation of the parameters
+
+1. b0 = 0.2083  
+The average number of chests discovered by a pirate is 0.2083 when age is equal to zero.
+
+2. b1 = 0.8217  
+When age increases by one year, the average number of discovered chests increases by 0.8217 chests.
+
+# Testing the regression model (Multiple Linear Regression Model – MLRM)
+
+H0: β1 = β2 = 0  
+H1: At least one of the independent variable coefficients is different from zero
+
+p-value = 0.0000000004082 < α = 0.05  
+⇒ We reject the null hypothesis (H0) at the 5% significance level.
+
+Interpretation:  
+We can conclude that the regression model is statistically significant. Age has a statistically significant influence on the dependent variable (number of discovered chests).
+
+# Model evaluation
+
+Coefficient of determination:
+R² = 0.03778  
+→ 3.778% of the variation in the dependent variable (number of discovered chests) is explained by the variation in the independent variable (pirate’s age).  
+The remaining variation is due to random factors not included in the model.
+
+Adjusted R² = 0.03682  
+→ 3.682% of the variation in the number of discovered chests is explained by age, after adjusting for the number of predictors in the model.
+
+## Multiple Linear Regression Model
+
+### Research objective
+
+We want to examine whether the number of treasure chests discovered by a pirate varies depending on:
+- the pirate’s age
+- the number of grogg mugs consumed
+
+The goal is to determine whether **age** and **grogg consumption** significantly influence the number of discovered chests.
+
+---
+
+## Estimated regression equation
+
+$$
+\widehat{tchests} = 5.4313 + 0.8328 \cdot age - 0.5449 \cdot grogg
+$$
+
+---
+
+## Interpretation of the parameters
+
+1. **Intercept ($\beta_0 = 5.4313$)**  
+
+$$
+\beta_0 = 5.4313
+$$
+
+The average number of discovered chests is 5.4313 when both age and the number of grogg mugs are equal to zero.
+
+---
+
+2. **Age coefficient ($\beta_1 = 0.8328$)**  
+
+$$
+\beta_1 = 0.8328
+$$
+
+When age increases by one year, the average number of discovered chests increases by 0.8328, holding grogg consumption constant.
+
+---
+
+3. **Grogg coefficient ($\beta_2 = -0.5449$)**  
+
+$$
+\beta_2 = -0.5449
+$$
+
+When the number of grogg mugs increases by one unit, the average number of discovered chests decreases by 0.5449, holding age constant.
+
+---
+
+## Testing the regression coefficients
+
+For each parameter:
+
+$$
+H_0: \beta_i = 0
+$$
+
+$$
+H_1: \beta_i \ne 0
+$$
+
+---
+
+### Statistical decisions
+
+- For $\beta_0$:  
+  $$
+  p\text{-value} = 0.2136 > 0.05 \Rightarrow \text{fail to reject } H_0
+  $$  
+  The intercept is not statistically significant.
+
+- For $\beta_1$ (age):  
+  $$
+  p\text{-value} = 3.21 \times 10^{-10} < 0.05 \Rightarrow \text{reject } H_0
+  $$  
+  Age has a statistically significant effect on the number of discovered chests.
+
+- For $\beta_2$ (grogg):  
+  $$
+  p\text{-value} = 0.0279 < 0.05 \Rightarrow \text{reject } H_0
+  $$  
+  Grogg consumption has a statistically significant effect on the number of discovered chests.
+
+---
+
+## Final interpretation
+
+At the 5% significance level:
+
+- There is a statistically significant linear relationship between **age** and the number of discovered chests.
+- There is a statistically significant linear relationship between **grogg consumption** and the number of discovered chests.
+- The intercept is not statistically significant.
+
+## Confidence Intervals for the MLRM Parameters
+
+### Confidence interval estimation (95%)
+
+#### Intercept ($\beta_0$)
+
+$$
+CI_{95\%}(\beta_0) = [-2.6027,\; 46.0481]
+$$
+
+With 95% confidence, we can state that the true value of $\beta_0$ lies within this interval.  
+Since the confidence interval contains 0, the intercept is **not statistically significant** at the 5% significance level.
+
+---
+
+#### Age coefficient ($\beta_1$)
+
+$$
+CI_{95\%}(\beta_1) = [0.4831,\; 1.0177]
+$$
+
+Because the confidence interval does not contain 0, there is a **statistically significant linear relationship** between the number of discovered chests and the pirate's age.
+
+---
+
+#### Grogg coefficient ($\beta_2$)
+
+$$
+CI_{95\%}(\beta_2) = [-1.0385,\; -0.0664]
+$$
+
+Since the confidence interval does not contain 0, there is a **statistically significant linear relationship** between the number of discovered chests and grogg consumption.
+
+---
+
+## Overall Significance of the Regression Model
+
+### Hypotheses
+
+$$
+H_0: \beta_1 = \beta_2 = 0
+$$
+
+$$
+H_1: \text{At least one independent variable coefficient is different from zero}
+$$
+
+Given:
+
+$$
+p\text{-value} = 4.082 \times 10^{-10} < 0.05
+$$
+
+We reject $H_0$ at the 5% significance level.
+
+**Conclusion:**  
+The regression model is statistically significant.
+
+---
+
+## Model Evaluation
+
+### Coefficient of Determination
+
+$$
+R^2 = 0.04244
+$$
+
+4.244% of the variation in the number of discovered chests is explained jointly by age and grogg consumption.  
+The remaining variation is due to other random factors not included in the model.
+
+---
+
+### Adjusted Coefficient of Determination
+
+$$
+R^2_{adj} = 0.04052
+$$
+
+After adjusting for the number of predictors, 4.052% of the variation in the dependent variable is explained by the independent variables.
+
+---
+
+# 7. Association Between Favorite Pirate and Sex
+
+We test whether favorite pirate preferences differ by sex.
+
+## Chi-Square Test of Independence
+
+### Hypotheses
+
+$$
+H_0: \text{Favorite pirate and sex are independent}
+$$
+
+$$
+H_1: \text{There is a significant association between favorite pirate and sex}
+$$
+
+Given:
+
+$$
+p\text{-value} = 1.181 \times 10^{-76} < 0.05
+$$
+
+We reject $H_0$ at the 5% significance level.
+
+**Conclusion:**  
+There is a statistically significant association between favorite pirate preference and the pirate’s sex.
